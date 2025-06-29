@@ -1,70 +1,97 @@
+import os
 import subprocess
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 import time
-import base64
+import json
+from bisect import bisect_left
+from mutagen import File
 
-command0 = [
-    "ffmpeg",
-    "-i", r"D:\Documents\Programming\Audio_Conversion\01_Bathtub.flac",
-    "-f", "ffmetadata",
-    r"D:\Documents\Programming\Audio_Conversion\metadata.txt"
-]
+from folder_detection import test_func
 
-command1 = [
-    "ffmpeg",
-    "-i", r"D:\Documents\Programming\Audio_Conversion\01_Bathtub.flac",
-    "-map", "0:v",
-    "-frames:v", "1",
-    r"D:\Documents\Programming\Audio_Conversion\cover.jpg"
-]
-
-def convert_to_base64():
-    with open(r"D:\Documents\Programming\Audio_Conversion\cover.jpg", "rb") as img_file:
-        b64_string = base64.b64encode(img_file.read()).decode('utf-8')
-    return b64_string
+# "Global" variables
+main_path = r"D:\Audio_Conversion_Test"
+flac_folder = r"Flac_Folder"
+opus_folder = r"Opus_Folder"
+backslash = "\\"
+image_extension = ".png"
 
 
-class SimpleHandler(FileSystemEventHandler):
-    def on_created(self, event):
-        print(f"File created: {event.src_path}")
-        #subprocess.run(command0, check=True)
-        #subprocess.run(command1, check=True)
-        #b64_string = convert_to_base64()
-        command2 = [
-            "ffmpeg",
-            "-i", r"D:\Documents\Programming\Audio_Conversion\01_Bathtub.flac",
-            "-i", r"D:\Documents\Programming\Audio_Conversion\metadata.txt",
-            "-map_metadata", "1",
-            "-codec:a", "libopus",
-            "-b:a", "128k",
-            r"D:\Documents\Programming\Audio_Conversion\01_Bathtub.opus"
-        ]
+# Values to pass in but set to values for testing
+current_folder = r""
+current_file_with_extension = r""
+current_file_without_extension = r""
+first_file_with_extension = r""
 
-        #meta_file = open(r"D:\Documents\Programming\Audio_Conversion\metadata.txt", "a")
-       # meta_file.write("METADATA_BLOCK_PICTURE=" + b64_string)
-        #subprocess.run(command2, check=True)
+# Use All O(1) structure to store most frequent artist name. Use this to decide what artist folder it goes in.
+# Otherwise put in Unknown Artist folder
 
-    def on_modified(self, event):
-        print(f"File modified: {event.src_path}")
+def get_json():
+    with open("processed.json", "r") as f:
+        processed = json.load(f)
+    with open("unprocessed.json", "r") as f:
+        unprocessed = json.load(f)
 
-    def on_deleted(self, event):
-        print(f"File deleted: {event.src_path}")
+    return processed, unprocessed
 
-if __name__ == "__main__":
-    path = r"D:\Documents\Programming\Audio_Conversion\audioConversion"
-    event_handler = SimpleHandler()
-    observer = Observer()
-    observer.schedule(event_handler, path=path, recursive=False)
-    observer.start()
+def
 
-    try:
-        print(f"Watching for changes in: {path}")
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
+#Use Global pass in variables to start testing all functions, then remove them later and pass in values
+#def extract_album_name(current_folder, first_file_with_extension):
+def get_album_name():
+    audio = File(main_path + backslash + flac_folder + backslash + current_folder + backslash + first_file_with_extension)
+    if audio:
+        return audio.get("album") or audio.get("ALBUM")
 
-    observer.join()
+#def cover_extract(current_folder, first_file_with_extension):
+def cover_extract():
+    cover_extract_command = [
+        "ffmpeg",
+        "-i", main_path + backslash + flac_folder + backslash + current_folder + backslash + first_file_with_extension,
+        "-map", "0:v",
+        "-frames:v", "1",
+        main_path + backslash + flac_folder + backslash + current_folder + backslash + "cover.png"
+    ]
+
+    return cover_extract_command
+
+#def get_artist_name(current_folder, current_file_with_extension):
+def get_artist_name():
+    audio = File(main_path + backslash + flac_folder + backslash + current_folder + backslash + first_file_with_extension)
+    if audio:
+        return audio.get("artist") or audio.get("ARTIST")
+
+#def convert_audio(current_folder, current_file_without_extension):
+def convert_audio():
+    convert_audio_command = [
+        "ffmpeg",
+        "-i", main_path + backslash + flac_folder + backslash + current_folder + backslash + current_file_with_extension,
+        "c:a", "libopus",
+        "-map_metadata", "0",
+              main_path + backslash + opus_folder + backslash + current_folder + backslash + current_file_without_extension + ".opus",
+    ]
+
+    return convert_audio_command
+
+# Cover art command
+r'''tageditor-cli set cover=D:\Documents\Programming\Audio_Conversion\audioConversion\cover.jpg --files D:\Documents\Programming\Audio_Conversion\audioConversion\01_Bathtub.opus'''
+def apply_cover_art():
+    apply_cover_command = [
+        "tageditor-cli", "set",
+        "cover=" + main_path + backslash + flac_folder + backslash + current_folder + backslash + "cover" + image_extension,
+        "--files", main_path + backslash + opus_folder + backslash + current_folder + backslash + current_file_without_extension + ".opus",
+    ]
+
+def main():
+    processed, unprocessed = get_json()
+
+
+
+
+    return None
+
+while True:
+    main()
+    time.sleep(30)
+
+
 
 #subprocess.run(command, check=True)
