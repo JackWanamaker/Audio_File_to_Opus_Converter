@@ -18,13 +18,7 @@ new_data = [{"folder": folder, "modified-date": modified} for folder, modified i
 with open("data.json", "r") as f:
     data = json.load(f)
 
-if len(data) != len(folders):
-    print("WTF")
-
 for i in range(len(data)):
     if data[i]["folder"] != folders[i]:
         print(folders[i])
         print(data[i]["folder"])
-
-def test_func():
-    return "My Test Function"
