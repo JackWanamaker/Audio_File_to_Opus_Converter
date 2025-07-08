@@ -30,7 +30,11 @@ class AllOne:
 
     def getMaxKey(self) -> str:
         return '' if self.tail.prev == self.head \
-            else next(iter(self.tail.keys))
+            else next(iter(self.tail.prev.keys))
+
+    def getMinKey(self) -> str:
+        return '' if self.head.next == self.tail \
+            else next(iter(self.head.next.keys))
 
     def _addNewKey(self, key: str) -> None:
         if self.head.next.count == 1:
