@@ -4,20 +4,27 @@ import time
 import json
 import shutil
 import ctypes
+import mutagen
 from mutagen import File
 from all_o_one_ben import AllOne
 
 # Global variables
+#Testing Environment
+#MAIN_PATH = r"D:\Audio_Conversion_Test"
+#FLAC_FOLDER = r"Flac_Folder"
+#OPUS_FOLDER = r"OPUS_Folder"
+#SYNC_FOLDER = r"SyncThing_Folder"
+#TEMP_FOLDER = r"Conversion_Temp_Folder"
 MAIN_PATH = r"D:\Muusic"
 FLAC_FOLDER = r"LIBRARY\FLAC\Soulseek"
 OPUS_FOLDER = r"OPUS LIBRARY\COMPLETE\OPUS\Soulseek"
 SYNC_FOLDER = "SyncThing_Folder"
 TEMP_FOLDER = "Conversion_Temp_Folder"
 BACKSLASH = "\\"
-'''DAY = 86400
-THIRTY_MINUTES = 30'''
-DAY = 1
-THIRTY_MINUTES = 5
+DAY = 86400
+THIRTY_MINUTES = 30
+'''DAY = 1
+THIRTY_MINUTES = 5'''
 IMAGE_EXTENSION = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff'}
 LOSSLESS_AUDIO = {".flac", ".alac", ".wav", ".aiff", ".wv", ".dsf", ".dff"}
 LOSSY_AUDIO = {".mp3", ".aac", ".m4a", ".ogg", ".opus", ".wma", ".amr"}
@@ -25,6 +32,7 @@ FILE_ATTRIBUTE_SYSTEM = 0x4
 INVALID_CHARACTERS = {'\\', '/', ':', '*', '?', '"', '<', '>', '|'}
 
 
+#Gets the information from the JSON file
 def get_json():
     with open(r"D:\Documents\Programming\Audio_Conversion\audioConversion\data.json", "r") as f:
         data = json.load(f)
@@ -32,6 +40,7 @@ def get_json():
     return data
 
 
+#Gets the current folder names and creation dates
 def get_folders(source_folder):
     path = source_folder
     directories = [os.path.join(path, name) for name in os.listdir(path) if (os.path.isdir(os.path.join(path, name))) and (not name.startswith("."))]
@@ -41,6 +50,7 @@ def get_folders(source_folder):
     return folders, created_date
 
 
+#Checks if there are any SyncThing temporary files in the directory
 def has_temp_files(source_folder):
     with os.scandir(source_folder) as entries:
         for entry in entries:
@@ -49,7 +59,7 @@ def has_temp_files(source_folder):
 
     return False
 
-
+#Finds directories in which we can convert audio
 def get_other_directories(source_folder, destination_folder):
     with os.scandir(source_folder) as entries:
         for entry in entries:
@@ -60,12 +70,14 @@ def get_other_directories(source_folder, destination_folder):
                 get_other_directories(source_folder + BACKSLASH + entry.name, destination_folder)
 
 
+#Checks if a file is a Windows system file
 def is_system_file(path):
     attributes = ctypes.windll.kernel32.GetFileAttributesW(path)
 
     return bool(attributes & FILE_ATTRIBUTE_SYSTEM)
 
 
+#Gathers all audio files and a cover file given a directory by get_other_directories
 def get_audio_files_and_check_for_cover(source_folder):
     lossless_audio_files = []
     lossy_audio_files = []
@@ -84,12 +96,19 @@ def get_audio_files_and_check_for_cover(source_folder):
     return lossless_audio_files, lossy_audio_files, cover_file
 
 
+#Gets the album name from the first file. Returns None if there is an error
 def get_album_name(source_folder, first_file_with_extension):
-    audio = File(source_folder + BACKSLASH + first_file_with_extension)
+    try:
+        audio = File(source_folder + BACKSLASH + first_file_with_extension)
+    except mutagen.MutagenError:
+        return None
     if audio:
-        return audio.get("album")[0] or audio.get("ALBUM")[0]
+        album_name = audio.get("album") or audio.get("ALBUM")
+        if album_name:
+            return album_name[0]
 
 
+#Runs a command to extract the album cover from the first audio file
 def extract_cover(source_folder, first_file_with_extension):
     cover_extract_command = [
         "ffmpeg",
@@ -99,15 +118,24 @@ def extract_cover(source_folder, first_file_with_extension):
         source_folder + BACKSLASH + "cover.png"
     ]
 
-    subprocess.run(cover_extract_command)
+    with open(r"D:\Documents\Programming\Audio_Conversion\audioConversion\log.txt") as f:
+        subprocess.run(cover_extract_command, stdout=f, stderr=f)
 
 
+
+#Gets artist name from a song. Returns None if there is an error
 def get_artist_name_from_song(source_folder, current_file_with_extension):
-    audio = File(source_folder + BACKSLASH + current_file_with_extension)
+    try:
+        audio = File(source_folder + BACKSLASH + current_file_with_extension)
+    except mutagen.MutagenError:
+        return None
     if audio:
-        return audio.get("artist")[0] or audio.get("ARTIST")[0]
+        artist_name = audio.get("artist") or audio.get("ARTIST")
+        if artist_name:
+            return artist_name[0]
 
 
+#Removes invalid characters for folders
 def remove_invalid_characters(input_string):
     for char in input_string:
         if char in INVALID_CHARACTERS:
@@ -116,6 +144,7 @@ def remove_invalid_characters(input_string):
     return input_string
 
 
+#Command that converts audio from source and puts it in the destination as opus
 def convert_audio(source_folder, destination_folder, current_file_with_extension, current_file_without_extension):
     convert_audio_command = [
         "ffmpeg",
@@ -126,10 +155,11 @@ def convert_audio(source_folder, destination_folder, current_file_with_extension
         "-y", destination_folder + BACKSLASH + current_file_without_extension + ".opus",
     ]
 
-    subprocess.run(convert_audio_command)
+    with open(r"D:\Documents\Programming\Audio_Conversion\audioConversion\log.txt") as f:
+        subprocess.run(convert_audio_command, stdout=f, stderr=f)
 
 
-# Cover art command
+#Applies cover art to a converted file
 def apply_cover_art(source_folder, destination_folder, current_file_without_extension, cover_file):
     dest_path = MAIN_PATH + BACKSLASH + TEMP_FOLDER + BACKSLASH + current_file_without_extension + ".opus"
 
@@ -139,50 +169,62 @@ def apply_cover_art(source_folder, destination_folder, current_file_without_exte
         "--files", destination_folder + BACKSLASH + current_file_without_extension + ".opus",
     ]
 
-    subprocess.run(apply_cover_command)
+    with open(r"D:\Documents\Programming\Audio_Conversion\audioConversion\log.txt") as f:
+        subprocess.run(apply_cover_command, stdout=f, stderr=f)
 
     if os.path.isfile(dest_path + ".bak"):
         os.remove(dest_path + ".bak")
 
 
+#Creates a folder based on the artist name
 def create_artist_directory(destination_folder, artist_name):
     path = MAIN_PATH + BACKSLASH + destination_folder + BACKSLASH + artist_name
     if not os.path.exists(path):
         os.mkdir(path)
 
 
+#Creates a folder based on the album name
 def create_album_directory(destination_folder, artist_name, album_name):
     path = MAIN_PATH + BACKSLASH + destination_folder + BACKSLASH + artist_name + BACKSLASH + album_name
     if not os.path.exists(path):
         os.mkdir(path)
 
 
+#Moves flac files to their archive
 def move_flac_files(source_folder, artist_name, album_name):
     dest_path = MAIN_PATH + BACKSLASH + FLAC_FOLDER + BACKSLASH + artist_name + BACKSLASH + album_name
     move_files(source_folder, dest_path)
 
 
+#Moves opus files to their archive
 def move_opus_files(artist_name, album_name):
     src_path = MAIN_PATH + BACKSLASH + TEMP_FOLDER
     dest_path = MAIN_PATH + BACKSLASH + OPUS_FOLDER + BACKSLASH + artist_name + BACKSLASH + album_name
     move_files(src_path, dest_path)
 
 
+#Moves files
 def move_files(src_path, dest_path):
     for item in os.listdir(src_path):
+        if os.path.isfile(dest_path + BACKSLASH + item):
+            os.remove(dest_path + BACKSLASH + item)
         shutil.move(src_path + BACKSLASH + item, dest_path + BACKSLASH + item)
 
 
+#Deletes files in the source and destination folders after everything is done
 def delete_old_contents(source_folder, destination_folder):
     shutil.rmtree(source_folder)
     shutil.rmtree(destination_folder)
     os.mkdir(destination_folder)
 
 
+#Main convert function
 def main_convert(source_folder, destination_folder):
     print("Main Convert Started")
     lossless_audio_files, lossy_audio_files, cover_file = get_audio_files_and_check_for_cover(source_folder)
     print(lossless_audio_files)
+
+    #Extracts cover based on if one was found in the folder or not
     if not cover_file:
         if lossless_audio_files:
             extract_cover(source_folder, lossless_audio_files[0])
@@ -190,39 +232,65 @@ def main_convert(source_folder, destination_folder):
             extract_cover(source_folder, lossy_audio_files[0])
         if os.path.isfile(source_folder + BACKSLASH + "cover.png"):
             cover_file = "cover.png"
+
+    #Gets the album name depending on audio file types
     if lossless_audio_files:
         album_name = get_album_name(source_folder, lossless_audio_files[0])
     elif lossy_audio_files:
         album_name = get_album_name(source_folder, lossy_audio_files[0])
     else:
+        delete_old_contents(source_folder, destination_folder)
+        return None
+
+    #Returns None if no album name is found. Some fatal error
+    if not album_name:
+        delete_old_contents(source_folder, destination_folder)
         return None
 
     album_name = remove_invalid_characters(album_name)
 
+    #Uses an AllO(1) data structure to pick the most frequent artist name out of all the files
     artist_names = AllOne()
 
+    #Processes/converts lossless audio
     for current_file_with_extension in lossless_audio_files:
-        artist_names.inc(get_artist_name_from_song(source_folder, current_file_with_extension))
+        temp_artist_name = get_artist_name_from_song(source_folder, current_file_with_extension)
+        if temp_artist_name:
+            artist_names.inc(temp_artist_name)
         current_file_without_extension = os.path.splitext(current_file_with_extension)[0]
         convert_audio(source_folder, destination_folder, current_file_with_extension, current_file_without_extension)
         apply_cover_art(source_folder, destination_folder, current_file_without_extension, cover_file)
 
+    #Copies lossy audio. No conversion
     for audio_file in lossy_audio_files:
         shutil.copy(source_folder + BACKSLASH + audio_file, destination_folder + BACKSLASH)
-        artist_names.inc(get_artist_name_from_song(source_folder, audio_file))
+        temp_name = get_artist_name_from_song(source_folder, audio_file)
+        if temp_name:
+            artist_names.inc(temp_name)
 
+    #Gets most common artist name from AllO(1)
     artist_name = artist_names.getMaxKey()
+
+    #If no artist name, returns None. Fatal error
+    if not artist_name:
+        delete_old_contents(source_folder, destination_folder)
+        return None
+
     artist_name = remove_invalid_characters(artist_name)
 
+    #Creates artist folders for new files
     create_artist_directory(FLAC_FOLDER, artist_name)
     create_artist_directory(OPUS_FOLDER, artist_name)
 
+    #Creates album folders for new files
     create_album_directory(FLAC_FOLDER, artist_name, album_name)
     create_album_directory(OPUS_FOLDER, artist_name, album_name)
 
+    #Moves finished files to their destination
     move_flac_files(source_folder, artist_name, album_name)
     move_opus_files(artist_name, album_name)
 
+    #Deletes old contents
     delete_old_contents(source_folder, destination_folder)
 
     print(album_name + " converted")
@@ -231,16 +299,19 @@ def main_convert(source_folder, destination_folder):
 # Main program. Will run every half hour to check if anything needs converting
 def main():
     print("Program Started")
+    #Gets important variables
     data = get_json()
     source_folder = MAIN_PATH + BACKSLASH + SYNC_FOLDER
     folders, created_date = get_folders(source_folder)
     current_time = time.time()
 
+    #If no data in JSON, adds all folder data to it
     if (not data) and folders:
         new_data = [{"folder": folders, "created-date": created} for folders, created in zip(folders, created_date)]
         with open(r"D:\Documents\Programming\Audio_Conversion\audioConversion\data.json", "w") as f:
             json.dump(new_data, f, indent=4)
 
+    #Otherwise, we search through and see if any need converting
     else:
         print("Checking data")
         new_data = data[:]
@@ -250,19 +321,21 @@ def main():
             print(folders)
             print(data)
 
+            #If the folder is not in the JSON, or no JSON is left, we add the items
             if (i >= data_length) or (folders[i] != data[i]["folder"]):
                 new_data.insert(i + data_offset, {"folder": folders[i], "created-date": created_date[i]})
                 if i < data_length:
                     data_offset += 1
+            #Otherwise, we start converting the audio
             elif (data[i]["folder"] == folders[i]) and (current_time - created_date[i] > DAY):
                 has_temp = has_temp_files(source_folder)
 
                 if not has_temp:
-                    print("Im here")
                     get_other_directories(source_folder + BACKSLASH + folders[i],
                                  MAIN_PATH + BACKSLASH + TEMP_FOLDER + BACKSLASH)
                     del new_data[i + data_offset]
                     data_offset -= 1
+                #If temp files exist, we add another day to the creation date so it is converted later
                 else:
                     print("Added a day")
                     data[i]["created-date"] += DAY
