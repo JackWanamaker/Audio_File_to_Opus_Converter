@@ -1,13 +1,15 @@
 import os
 import subprocess
 import shutil
+import ctypes
 
 SRC_DIR = r"D:\Muusic\LIBRARY\FLAC"
-DEST_DIR = r"D:\Muusic\OPUS LIBRARY\NEW_OPUS"
+DEST_DIR = r"D:\Muusic\OPUS LIBRARY\COMPLETE\OPUS"
 BACKSLASH = "\\"
 IMAGE_EXTENSION = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff'}
 LOSSLESS_AUDIO = {".flac", ".alac", ".wav", ".aiff", ".wv", ".dsf", ".dff"}
 LOSSY_AUDIO = {".mp3", ".aac", ".m4a", ".ogg", ".opus", ".wma", ".amr"}
+FILE_ATTRIBUTE_SYSTEM = 0x4
 
 
 #i love you
@@ -28,8 +30,6 @@ def get_audio_folders():
         current_destination_path = DEST_DIR + BACKSLASH + folder
         os.mkdir(current_destination_path)
 
-        print(current_source_path)
-
         get_album_folders(current_source_path, current_destination_path)
 
 
@@ -40,8 +40,6 @@ def get_album_folders(source_folder, destination_folder):
         current_source_path = source_folder + BACKSLASH + folder
         current_destination_path = destination_folder + BACKSLASH + folder
         os.mkdir(current_destination_path)
-        print(current_source_path)
-        print(current_destination_path)
 
         get_artist_folders(current_source_path, current_destination_path)
 
@@ -53,8 +51,6 @@ def get_artist_folders(source_folder, destination_folder):
         current_source_path = source_folder + BACKSLASH + folder
         current_destination_path = destination_folder + BACKSLASH + folder
         os.mkdir(current_destination_path)
-        print(current_source_path)
-        print(current_destination_path)
 
         get_other_directories(current_source_path, current_destination_path)
 
@@ -63,11 +59,9 @@ def get_other_directories(source_folder, destination_folder):
     with os.scandir(source_folder) as entries:
         for entry in entries:
             if entry.is_file() and ((os.path.splitext(entry.name)[1] in LOSSLESS_AUDIO) or (os.path.splitext(entry.name)[1] in LOSSY_AUDIO)):
-                print(entry.name)
                 process_audio(source_folder, destination_folder)
                 break
             elif entry.is_dir():
-                print(entry.name)
                 get_other_directories(source_folder + BACKSLASH + entry.name, destination_folder)
 
 
@@ -80,8 +74,8 @@ def process_audio(source_folder, destination_folder):
             extract_cover(source_folder, lossy_audio_files[0])
         if os.path.isfile(source_folder + BACKSLASH + "cover.png"):
             cover_file = "cover.png"
+    print(cover_file)
     for current_file_with_extension in lossless_audio_files:
-        print(current_file_with_extension)
         current_file_without_extension = os.path.splitext(current_file_with_extension)[0]
         convert_audio(source_folder, destination_folder, current_file_with_extension,
                       current_file_without_extension)
@@ -90,9 +84,13 @@ def process_audio(source_folder, destination_folder):
                             cover_file)
 
     for audio_file in lossy_audio_files:
-        print(source_folder + BACKSLASH + audio_file)
-        print(destination_folder + BACKSLASH)
         shutil.copy(source_folder + BACKSLASH + audio_file, destination_folder + BACKSLASH)
+
+def is_system_file(path):
+    attributes = ctypes.windll.kernel32.GetFileAttributesW(path)
+
+    return bool(attributes & FILE_ATTRIBUTE_SYSTEM)
+
 
 def get_audio_files_and_check_for_cover(current_folder):
     lossless_audio_files = []
@@ -101,12 +99,12 @@ def get_audio_files_and_check_for_cover(current_folder):
     has_img = False
     with os.scandir(current_folder) as entries:
         for entry in entries:
+            print(entry.name)
             if entry.is_file() and os.path.splitext(entry.name)[1] in LOSSLESS_AUDIO:
                 lossless_audio_files.append(entry.name)
             elif entry.is_file() and os.path.splitext(entry.name)[1] in LOSSY_AUDIO:
-                print(entry.name)
                 lossy_audio_files.append(entry.name)
-            elif (entry.is_file()) and (os.path.splitext(entry.name)[1].lower() in IMAGE_EXTENSION) and (not has_img):
+            elif (entry.is_file()) and (os.path.splitext(entry.name)[1].lower() in IMAGE_EXTENSION) and (not has_img) and (not is_system_file(current_folder + BACKSLASH + entry.name)):
                 cover_file = entry.name
                 has_img = True
 
