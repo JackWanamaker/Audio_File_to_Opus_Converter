@@ -25,11 +25,11 @@ TEMP_FOLDER = "Conversion_Temp_Folder"
 JSON_PATH = r"D:\Documents\Programming\Audio_Conversion\audioConversion\data.json"
 LOG_PATH = r"D:\Documents\Programming\Audio_Conversion\audioConversion\log.txt"
 BACKSLASH = "\\"
-#DAY = 86400
-#THIRTY_MINUTES = 30
+DAY = 86400
+THIRTY_MINUTES = 1800
 WEEK = 604800
-DAY = 1
-THIRTY_MINUTES = 5
+#DAY = 1
+#THIRTY_MINUTES = 5
 #WEEK = 180
 IMAGE_EXTENSION = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff'}
 LOSSLESS_AUDIO = {".flac", ".alac", ".wav", ".aiff", ".wv", ".dsf", ".dff"}
@@ -40,7 +40,7 @@ INVALID_CHARACTERS = {'\\', '/', ':', '*', '?', '"', '<', '>', '|'}
 
 def delete_text_file():
     print("Checking if log file needs to be deleted")
-    if os.path.getctime(LOG_PATH) > WEEK + time.time():
+    if os.path.getctime(LOG_PATH) < time.time() - WEEK:
         print("Log File Deleted")
         os.remove(LOG_PATH)
         with open(LOG_PATH, "w") as f:
