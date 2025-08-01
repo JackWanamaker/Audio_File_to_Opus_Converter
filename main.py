@@ -39,6 +39,7 @@ INVALID_CHARACTERS = {'\\', '/', ':', '*', '?', '"', '<', '>', '|'}
 
 
 def delete_text_file():
+    print("Checking if log file needs to be deleted")
     if os.path.getctime(LOG_PATH) > WEEK + time.time():
         print("Log File Deleted")
         os.remove(LOG_PATH)
@@ -59,10 +60,9 @@ def get_folders(source_folder):
     print("Getting folders")
     path = source_folder
     directories = [os.path.join(path, name) for name in os.listdir(path) if (os.path.isdir(os.path.join(path, name))) and (not name.startswith("."))]
-    folders = [os.path.basename(item) for item in directories]
-    created_date = [os.path.getctime(item) for item in directories]
+    folders = {os.path.basename(item): os.path.getctime(item) for item in directories}
 
-    return folders, created_date
+    return folders
 
 
 #Checks if there are any SyncThing temporary files in the directory
@@ -242,7 +242,7 @@ def move_opus_files(artist_name, album_name):
 
 #Moves files
 def move_files(src_path, dest_path):
-    print("Moving Files")
+    print("Moving Files To " + dest_path)
     for item in os.listdir(src_path):
         if os.path.isfile(dest_path + BACKSLASH + item):
             os.remove(dest_path + BACKSLASH + item)
@@ -343,53 +343,59 @@ def main():
     #Gets important variables
     data = get_json()
     source_folder = MAIN_PATH + BACKSLASH + SYNC_FOLDER
-    folders, created_date = get_folders(source_folder)
+    folders = get_folders(source_folder)
+
+    #If there is no data, we end the program
+    if (not data) and (not folders):
+        return None
 
     #If no data in JSON, adds all folder data to it
-    if (not data) and folders:
+    elif (not data) and folders:
         print("No data in JSON. Adding all folders to it")
-        new_data = [{"folder": folders, "created-date": created} for folders, created in zip(folders, created_date)]
         with open(JSON_PATH, "w") as f:
-            json.dump(new_data, f, indent=4)
+            json.dump(folders, f, indent=4)
 
     #Otherwise, we search through and see if any need converting
     else:
         print("Data in JSON. Now checking")
-        new_data = data[:]
         data_offset = 0
+        iterator = 0
+        new_data = data.copy()
         print("Printing Folders")
         print(folders)
         print("Printing JSON Data")
         print(data)
-        for i in range(len(folders)):
 
-            #If the folder is not in the JSON, or no JSON is left, we add the items
-            if (i >= len(new_data)) or (folders[i] != new_data[i+data_offset]["folder"]):
-                print("Current Iteration I: " + str(i))
-                print("Current Iteration Plus Offset: " + str(data_offset))
-                print("Current Folder: " + folders[i])
-                print("Current JSON Folder: " + new_data[i+data_offset]["folder"])
-                new_data.insert(i+data_offset, {"folder": folders[i], "created-date": created_date[i]})
-            #Otherwise, we start converting the audio
-            elif (new_data[i+data_offset]["folder"] == folders[i]) and (current_time - created_date[i] > DAY):
-                has_temp = has_temp_files(source_folder)
-
-                if not has_temp:
-                    has_audio_files = get_other_directories(source_folder + BACKSLASH + folders[i],MAIN_PATH + BACKSLASH + TEMP_FOLDER + BACKSLASH)
-                    print("Directory Has Audio Files: " + str(has_audio_files))
-                    if has_audio_files:
-                        print("Deleted Converted JSON")
-                        del new_data[i + data_offset]
-                        data_offset -= 1
-                    else:
-                        print("Added a day")
-                        new_data[i + data_offset]["created-date"] += DAY
-                #If temp files exist, we add another day to the creation date so it is converted later
+        for key in data:
+            if not key in folders:
+                print("Folder no longer present. Deleting JSON entry")
+                del new_data[key]
+            elif key in folders:
+                print("Folder is present")
+                if (current_time - data[key]) < DAY:
+                    print("Folder not ready to be processed yet.")
                 else:
-                    print("Added a day")
-                    new_data[i + data_offset]["created-date"] += DAY
+                    print("Folders ready to process")
+
+                has_temp = has_temp_files(source_folder)
+                if not has_temp:
+                    print("No temp files present. Checking directory")
+                    has_audio_files = get_other_directories(source_folder + BACKSLASH + key, MAIN_PATH + BACKSLASH + TEMP_FOLDER + BACKSLASH)
+                    if has_audio_files:
+                        print("Audio files were present and processed")
+                    else:
+                        print("No audio files were present. Adding a day")
+                        new_data[key] += DAY
+                else:
+                    print("Temp files present. Adding a day")
+                    new_data[key] += DAY
+                del folders[key]
             else:
-                print("Folders are equal and need no change, or strange error")
+                print("Strange error when looking for keys")
+
+        for key in folders:
+            if not key in data:
+                new_data[key] = folders[key]
 
         with open(JSON_PATH, "w") as f:
             json.dump(new_data, f, indent=4)
@@ -400,6 +406,5 @@ while True:
         sys.stdout = f
         main()
     sys.stdout = sys.__stdout__
-    print("Deleting")
     delete_text_file()
     time.sleep(THIRTY_MINUTES)
