@@ -385,10 +385,10 @@ def main():
                         print("Audio files were present and processed")
                     else:
                         print("No audio files were present. Adding a day")
-                        new_data[key] += DAY
+                        new_data[key] = time.time() + DAY
                 else:
                     print("Temp files present. Adding a day")
-                    new_data[key] += DAY
+                    new_data[key] = time.time() + DAY
                 del folders[key]
             else:
                 print("Strange error when looking for keys")
