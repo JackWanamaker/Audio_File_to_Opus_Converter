@@ -349,6 +349,7 @@ def main():
     data = get_json()
     source_folder = MAIN_PATH + BACKSLASH + SYNC_FOLDER
     folders = get_folders(source_folder)
+    sys.stdout.reconfigure(encoding='utf-8')
 
     #If there is no data, we end the program
     if (not data) and (not folders):
@@ -407,7 +408,6 @@ def main():
 
 
 while True:
-    sys.stdout.reconfigure(encoding='utf-8')
     with open(LOG_PATH, "a") as f:
         sys.stdout = f
         main()
