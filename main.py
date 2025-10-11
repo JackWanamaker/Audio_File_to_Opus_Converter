@@ -130,6 +130,14 @@ def get_album_name(source_folder, first_file_with_extension):
         if album_name:
             return album_name[0]
 
+#Runs a subprocess given a command. If debug puts it in the console, otherwise in the log file
+def subprocess_run(my_command, debug=False):
+    if debug:
+        subprocess.run(my_command)
+    else:    
+        with open(LOG_PATH, "a") as f:
+            subprocess.run(my_command, stdout=f, stderr=f)
+
 
 #Runs a command to extract the album cover from the first audio file
 def extract_cover(source_folder, first_file_with_extension):
@@ -142,8 +150,7 @@ def extract_cover(source_folder, first_file_with_extension):
         source_folder + BACKSLASH + "cover.png"
     ]
 
-    with open(LOG_PATH, "a") as f:
-        subprocess.run(cover_extract_command, stdout=f, stderr=f)
+    subprocess_run(cover_extract_command)
 
 
 
@@ -184,8 +191,7 @@ def convert_audio(source_folder, destination_folder, current_file_with_extension
         "-y", destination_folder + BACKSLASH + current_file_without_extension + ".opus",
     ]
 
-    with open(LOG_PATH, "a") as f:
-        subprocess.run(convert_audio_command, stdout=f, stderr=f)
+    subprocess_run(convert_audio_command)
 
 
 #Applies cover art to a converted file
@@ -199,8 +205,7 @@ def apply_cover_art(source_folder, destination_folder, current_file_without_exte
         "--files", destination_folder + BACKSLASH + current_file_without_extension + ".opus",
     ]
 
-    with open(LOG_PATH, "a") as f:
-        subprocess.run(apply_cover_command, stdout=f, stderr=f)
+    subprocess_run(apply_cover_command)
 
     if os.path.isfile(dest_path + ".bak"):
         print("Removed temp file")
@@ -402,6 +407,7 @@ def main():
 
 
 while True:
+    sys.stdout.reconfigure(encoding='utf-8')
     with open(LOG_PATH, "a") as f:
         sys.stdout = f
         main()
