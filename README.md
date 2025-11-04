@@ -78,8 +78,7 @@
 [![Video Title](https://i.imgur.com/rlq5OYh.png)](https://www.youtube.com/watch?v=HGC0RAhUWWo)
 
 
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+This project is built to automatically convert your lossless audio albums to Opus with no hassle! Perfect for people who want to build their own music libraries, but are tired of sacrificing space, sound quality, and time.
 
 
 
@@ -87,57 +86,70 @@
 
 * [![Python][Python.org]][Python-url]
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+Please follow the instructions below, and/or follow along with the video guide above.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+1. This must be run on a Windows Operating System
+2. Download the latest version of [Python](https://www.python.org/downloads/), latest version of [FFmpeg](https://ffmpeg.org/download.html), and latest version of [TagEditor](https://github.com/Martchus/tageditor).
+3. Install all of the above and set them as [Path Variables](https://youtu.be/gb9e3m98avk?si=Rnv1_87uFZ6Lbui0)
+4. Install the mutagen Python library by opening command prompt or terminal and type `pip install mutagen`. 
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/JackWanamaker/Audio_File_To_Opus_Converter.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
-5. Change git remote url to avoid accidental pushes to base project
-   ```sh
-   git remote set-url origin JackWanamaker/Audio_File_To_Opus_Converter
-   git remote -v # confirm the changes
-   ```
+1. Download my entire repo and extract it to a location that you will remember and is convenient
+2. Open a file explorer window and navigate to your music folder.
+3. Create 4 folders within your music folder: UNPROCESSED, TEMP, ARCHIVE, and COMPRESSED. It should be this type of structure:
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<br><br>
 
+![Example Folder Structure](https://i.imgur.com/RlB4xMN.png)
 
+4. Open `main.py` in an IDE or text editor
+5. Set MAIN_PATH, FLAC_FOLDER, OPUS_FOLDER, SYNC_FOLDER, and TEMP_FOLDER as C:/Users/MyUser/Music (or location of your music folder), ARCHIVE, COMPRESSED, UNPROCESSED, and TEMP. Here is an example:
+
+<br>
+
+```
+MAIN_PATH = r"C:\Users\MyUser\Music"
+FLAC_FOLDER = r"ARCHIVE"
+OPUS_FOLDER = r"COMPRESSED"
+SYNC_FOLDER = "UNPROCESSED"
+TEMP_FOLDER = "TEMP"
+```
+
+<br>
+
+6. Set the location of the json and log files for the JSON_PATH and LOG_PATH variables. Here is an example if you put my repo in your documents:
+
+<br>
+
+```
+JSON_PATH = r"C:\Users\MyUser\Documents\Audio_File_to_Opus_Converter\data.json"
+LOG_PATH = r"C:\Users\MyUser\Documents\Audio_File_to_Opus_Converter\log.txt"
+```
+
+<br>
+
+7. (Optional) To have the program run automatically on startup, hit ⊞ + R at the same time to open run, and type `shell:startup` before pressing OK
+8. (Optional) Create a batch script with these contents changed to match the location of your Python install and my repo:
+
+<br>
+
+```
+@echo off
+start "" "PATH_TO_PYTHON_INSTALL" "PATH_TO_MAIN_PYTHON_FILE"
+```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+To get the most out of the automatice converter, I use [SyncThing](https://syncthing.net/) so I can download albums to my phone, have them synced to my PC, and have my program automatically compress them for me. Afterwards, it sends the newly compressed files to my phone, and deletes the lossless files off, all while saving the lossless files in a separate folder on the PC.
 
 
 <!-- CONTRIBUTING -->
