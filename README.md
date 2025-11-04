@@ -27,7 +27,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/JackWanamaker/Audio_File_To_Opus_Converter">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="https://i.imgur.com/8T7ip83.jpeg" alt="Logo" width="320" height="240">
   </a>
 
 <h3 align="center">Audio File To Opus Automatic Converter</h3>
@@ -38,8 +38,6 @@
     <a href="https://github.com/JackWanamaker/Audio_File_To_Opus_Converter"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/JackWanamaker/Audio_File_To_Opus_Converter">View Demo</a>
-    &middot;
     <a href="https://github.com/JackWanamaker/Audio_File_To_Opus_Converter/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     &middot;
     <a href="https://github.com/JackWanamaker/Audio_File_To_Opus_Converter/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
@@ -77,9 +75,15 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+<div style="position: relative; width: 100%; padding-bottom: 56.25%">
+<iframe src="https://www.youtube.com/embed/3CM1_Ji6fJ8" 
+        title="Anti-Trust - The War Machine" frameborder="0" allowfullscreen
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        style="position: absolute; width: 100%; height: 100%;">
+</iframe>
+</div>
 
-Here's a blank template to get started. To avoid retyping too much info, do a search and replace with your text editor for the following: `JackWanamaker`, `Audio_File_To_Opus_Converter`, `bensummer49`, `bensummer`, `gmail`, `bensummer49`, `Audio File To Opus Automatic Converter`, `Helps automatically convert a library of music to Opus format`, `Unlicense`
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
