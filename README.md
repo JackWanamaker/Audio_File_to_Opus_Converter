@@ -75,13 +75,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-<div style="position: relative; width: 100%; padding-bottom: 56.25%">
-<iframe src="https://www.youtube.com/embed/3CM1_Ji6fJ8" 
-        title="Anti-Trust - The War Machine" frameborder="0" allowfullscreen
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-        style="position: absolute; width: 100%; height: 100%;">
-</iframe>
-</div>
+[![Video Title](https://i.imgur.com/rlq5OYh.png)](https://www.youtube.com/watch?v=HGC0RAhUWWo)
 
 
 
